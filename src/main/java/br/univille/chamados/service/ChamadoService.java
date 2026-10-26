@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import br.univille.chamados.dto.ChamadoRequest;
+import br.univille.chamados.dto.ChamadoDetalheResponse;
 import br.univille.chamados.dto.ChamadoResponse;
 import br.univille.chamados.dto.ChamadoUpdateRequest;
+import br.univille.chamados.dto.ComentarioResponse;
 import br.univille.chamados.entity.Categoria;
 import br.univille.chamados.entity.Chamado;
 import br.univille.chamados.entity.Cliente;
@@ -16,6 +18,7 @@ import br.univille.chamados.exception.RecursoNaoEncontradoException;
 import br.univille.chamados.repository.CategoriaRepository;
 import br.univille.chamados.repository.ChamadoRepository;
 import br.univille.chamados.repository.ClienteRepository;
+import br.univille.chamados.repository.ComentarioRepository;
 import br.univille.chamados.repository.TecnicoRepository;
 
 @Service
@@ -24,15 +27,18 @@ public class ChamadoService {
     private final ClienteRepository clienteRepository;
     private final CategoriaRepository categoriaRepository;
     private final TecnicoRepository tecnicoRepository;
+    private final ComentarioRepository comentarioRepository;
 
     public ChamadoService(ChamadoRepository chamadoRepository,
             ClienteRepository clienteRepository,
             CategoriaRepository categoriaRepository,
-            TecnicoRepository tecnicoRepository) {
+            TecnicoRepository tecnicoRepository,
+            ComentarioRepository comentarioRepository) {
         this.chamadoRepository = chamadoRepository;
         this.clienteRepository = clienteRepository;
         this.categoriaRepository = categoriaRepository;
         this.tecnicoRepository = tecnicoRepository;
+        this.comentarioRepository = comentarioRepository;
     }
 
     @Transactional
@@ -56,8 +62,13 @@ public class ChamadoService {
     }
 
     @Transactional(readOnly = true)
-    public ChamadoResponse buscar(Long id) {
-        return ChamadoResponse.de(buscarEntity(id));
+    public ChamadoDetalheResponse buscar(Long id) {
+        Chamado chamado = buscarEntity(id);
+        List<ComentarioResponse> comentarios = comentarioRepository
+            .findByChamadoIdOrderByDataAsc(id).stream()
+            .map(ComentarioResponse::de)
+            .toList();
+        return ChamadoDetalheResponse.de(chamado, comentarios);
     }
 
     @Transactional
