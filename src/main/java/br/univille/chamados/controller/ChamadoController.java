@@ -1,11 +1,12 @@
 package br.univille.chamados.controller;
 
 import java.net.URI;
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,11 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.univille.chamados.dto.ChamadoRequest;
+import br.univille.chamados.dto.ChamadoAtribuicaoRequest;
+import br.univille.chamados.dto.ChamadoStatusRequest;
 import br.univille.chamados.dto.ChamadoDetalheResponse;
 import br.univille.chamados.dto.ChamadoResponse;
 import br.univille.chamados.dto.ChamadoUpdateRequest;
 import br.univille.chamados.dto.ComentarioRequest;
 import br.univille.chamados.dto.ComentarioResponse;
+import br.univille.chamados.entity.Prioridade;
+import br.univille.chamados.entity.StatusChamado;
 import br.univille.chamados.service.ChamadoService;
 import br.univille.chamados.service.ComentarioService;
 import jakarta.validation.Valid;
@@ -42,8 +47,9 @@ public class ChamadoController {
     }
 
     @GetMapping
-    public List<ChamadoResponse> listar() {
-        return service.listar();
+    public Page<ChamadoResponse> listar(
+            StatusChamado status, Prioridade prioridade, Long clienteId, Pageable pageable) {
+        return service.listar(status, prioridade, clienteId, pageable);
     }
 
     @GetMapping("/{id}")
@@ -58,6 +64,18 @@ public class ChamadoController {
         return ResponseEntity
             .created(URI.create("/chamados/" + id + "/comentarios/" + criado.id()))
             .body(criado);
+    }
+
+    @PatchMapping("/{id}/atribuir")
+    public ChamadoResponse atribuir(
+            @PathVariable Long id, @Valid @RequestBody ChamadoAtribuicaoRequest dto) {
+        return service.atribuir(id, dto);
+    }
+
+    @PatchMapping("/{id}/status")
+    public ChamadoResponse alterarStatus(
+            @PathVariable Long id, @Valid @RequestBody ChamadoStatusRequest dto) {
+        return service.alterarStatus(id, dto.status());
     }
 
     @PutMapping("/{id}")

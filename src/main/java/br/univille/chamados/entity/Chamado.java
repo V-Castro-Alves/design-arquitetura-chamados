@@ -18,6 +18,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import br.univille.chamados.exception.RegraNegocioException;
 
 @Entity
 @Table(name = "chamados")
@@ -90,10 +91,31 @@ public class Chamado {
     }
 
     public void alterarStatus(StatusChamado novoStatus) {
+        if (status == StatusChamado.FECHADO && novoStatus != StatusChamado.FECHADO) {
+            throw new RegraNegocioException("Chamado fechado não pode ser reaberto");
+        }
+        if (novoStatus == null || !transicaoPermitida(novoStatus)) {
+            throw new RegraNegocioException(
+                "Transição de status inválida: " + status + " para " + novoStatus);
+        }
         status = novoStatus;
         dataFechamento = novoStatus == StatusChamado.FECHADO
             ? LocalDateTime.now()
             : null;
+    }
+
+    private boolean transicaoPermitida(StatusChamado novoStatus) {
+        if (status == novoStatus) {
+            return true;
+        }
+        return switch (status) {
+            case ABERTO -> novoStatus == StatusChamado.EM_ATENDIMENTO;
+            case EM_ATENDIMENTO -> novoStatus == StatusChamado.AGUARDANDO_CLIENTE
+                || novoStatus == StatusChamado.FECHADO;
+            case AGUARDANDO_CLIENTE -> novoStatus == StatusChamado.EM_ATENDIMENTO
+                || novoStatus == StatusChamado.FECHADO;
+            case FECHADO -> false;
+        };
     }
 
     public Long getId() {

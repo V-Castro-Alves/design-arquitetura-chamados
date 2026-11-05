@@ -3,6 +3,8 @@ package br.univille.chamados.controller;
 import java.net.URI; 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity; 
 import org.springframework.web.bind.annotation.DeleteMapping; 
 import org.springframework.web.bind.annotation. GetMapping; 
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation. RestController;
 
 import br.univille.chamados. dto.ClienteRequest; 
 import br.univille.chamados.dto.ClienteResponse; 
+import br.univille.chamados.dto.ChamadoResponse;
 import br.univille.chamados.service. ClienteService; 
+import br.univille.chamados.service.ChamadoService;
 import jakarta.validation. Valid; 
 
 
@@ -23,9 +27,11 @@ import jakarta.validation. Valid;
 @RequestMapping("/clientes")
 public class ClienteController {
     private final ClienteService service; 
+    private final ChamadoService chamadoService;
 
-    public ClienteController(ClienteService service) {
+    public ClienteController(ClienteService service, ChamadoService chamadoService) {
         this.service = service;
+        this.chamadoService = chamadoService;
     }
 
     @PostMapping 
@@ -42,6 +48,12 @@ public class ClienteController {
     @GetMapping ("/{id}")
     public ClienteResponse buscar(@PathVariable Long id) {
         return service.buscar(id);
+    }
+
+    @GetMapping("/{id}/chamados")
+    public Page<ChamadoResponse> listarChamados(
+            @PathVariable Long id, Pageable pageable) {
+        return chamadoService.listarPorCliente(id, pageable);
     }
 
     @PutMapping("/{id}")
