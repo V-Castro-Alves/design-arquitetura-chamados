@@ -9,6 +9,8 @@ import br.univille.chamados.entity.Prioridade;
 import br.univille.chamados.entity.StatusChamado;
 
 public interface ChamadoRepository extends JpaRepository<Chamado, Long> {
+    long countByStatus(StatusChamado status);
+
     Page<Chamado> findByStatusAndPrioridadeAndClienteId(
         StatusChamado status, Prioridade prioridade, Long clienteId, Pageable pageable);
 

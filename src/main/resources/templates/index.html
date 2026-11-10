@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Painel · Central de Suporte</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header('painel')}"></header>
+<main class="container">
+  <section class="hero"><div><span class="eyebrow">VISÃO GERAL</span><h1>Olá, equipe de suporte</h1><p>Acompanhe a operação e resolva o que precisa de atenção.</p></div><a class="button primary" th:href="@{/app/chamados/novo}">Abrir chamado</a></section>
+  <section class="stats">
+    <article class="stat"><span>Total de chamados</span><strong th:text="${total}">0</strong><small>Registrados no sistema</small></article>
+    <article class="stat amber"><span>Abertos</span><strong th:text="${abertos}">0</strong><small>Aguardando atendimento</small></article>
+    <article class="stat blue"><span>Em atendimento</span><strong th:text="${atendimento}">0</strong><small>Em andamento agora</small></article>
+    <article class="stat green"><span>Fechados</span><strong th:text="${fechados}">0</strong><small>Atendimentos concluídos</small></article>
+  </section>
+  <section class="panel"><div class="panel-title"><div><span class="eyebrow">ATIVIDADE</span><h2>Chamados recentes</h2></div><a th:href="@{/app/chamados}">Ver todos →</a></div>
+    <div class="empty" th:if="${#lists.isEmpty(recentes)}"><strong>Nenhum chamado ainda</strong><span>Abra o primeiro chamado para começar.</span></div>
+    <div class="ticket-list"><a class="ticket-row" th:each="item : ${recentes}" th:href="@{/app/chamados/{id}(id=${item.id})}"><span class="ticket-id" th:text="'CH-' + ${item.id}"></span><span class="ticket-main"><strong th:text="${item.titulo}"></strong><small th:text="${#temporals.format(item.dataAbertura, 'dd/MM/yyyy HH:mm')}"></small></span><span class="badge" th:classappend="${item.prioridade.name().toLowerCase()}" th:text="${item.prioridade}"></span><span class="badge status" th:text="${#strings.replace(item.status, '_', ' ')}"></span></a></div>
+  </section>
+</main>
+</body></html>
